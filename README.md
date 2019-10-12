@@ -3,7 +3,37 @@
 # Bayesian Adaptive Superpixel Segmentation
 
 This is a placeholder for the code from our ICCV 2019 paper, "Bayesian Adaptive Superpixel Segmentation", co-authored by Roy Uziel, Meitar Ronen, and Oren Freifeld.
-We expect to release the code near the time of the conference. 
+
+# Set-up
+
+The code uses Python 2.7 and it was tested on Tensorflow 1.12.0.
+
+Install pip and virtualenv
+```
+sudo apt-get install python-pip python-virtualenv
+```
+
+Clone the git project:
+```
+$ git clone https://github.com/BGU-CS-VIL/BASS.git
+```
+
+Set up virtual environment:
+```
+$ mkdir <your_home_dir>/.virtualenvs
+$ virtualenv <your_home_dir>/.virtualenvs/BASS
+```
+
+Activate virtual environment:
+```
+$ cd BASS
+$ source <your_home_dir>/BASS/bin/activate
+```
+
+The requirements can be installed using:
+```
+pip install -r requirements.txt
+```
 
 # License
 
