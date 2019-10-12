@@ -6,7 +6,7 @@ This is a placeholder for the code from our ICCV 2019 paper, "Bayesian Adaptive 
 
 # Set-up
 
-The code uses Python 2.7 and it was tested on Tensorflow 1.12.0.
+The code uses Python 3.6 and it was tested on Pytorch 1.3.0
 
 Install pip and virtualenv
 ```
