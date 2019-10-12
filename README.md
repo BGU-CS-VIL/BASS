@@ -4,7 +4,7 @@
 
 This is a placeholder for the code from our ICCV 2019 paper, "Bayesian Adaptive Superpixel Segmentation", co-authored by Roy Uziel, Meitar Ronen, and Oren Freifeld.
 
-# Set-up
+# Installation
 
 The code uses Python 3.6 and it was tested on Pytorch 1.3.0
 
@@ -33,6 +33,17 @@ $ source <your_home_dir>/BASS/bin/activate
 The requirements can be installed using:
 ```
 pip install -r requirements.txt
+```
+
+# Usage
+
+Saving csv file as output
+```
+python BASS --img_folder /path/to/image/folder --csv
+```
+Saving mean colors and contours images
+```
+python BASS --img_folder /path/to/image/folder --vis
 ```
 
 # License
