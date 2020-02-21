@@ -37,7 +37,7 @@ pip install -r requirements.txt
 
 # Usage
 
-Saving csv file as output
+Saving csv file
 ```
 python BASS.py --img_folder /path/to/image/folder --csv
 ```
