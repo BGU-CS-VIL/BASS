@@ -47,6 +47,7 @@ def initVariables():
     global csv
     global Print
     global device
+    global add_splits
     covarince_estimation=True
     split_merges=True
     K_C_HIGH = 999
@@ -63,7 +64,7 @@ def initVariables():
     Beta_P = torch.from_numpy(np.array([2.7], dtype=np.float)).to(device).float()
     C_prior = 50
 
-    ALPHA_MS = 2675
+    ALPHA_MS = 2675 + 25*add_splits
 
     ALPHA_MS2 = 0.0001
 

@@ -953,6 +953,11 @@ if __name__ == "__main__":
                         action='store_true',
                         help='use cpu'
                         )
+    parser.add_argument('--add_splits',
+                        type=int,
+                        default=0,
+                        help='large number for more splits (range -10 to 10)'
+                        )
     parser.add_argument('--v',
                         action='store_true',
                         help='verbose'
@@ -961,7 +966,7 @@ if __name__ == "__main__":
     Global.Plot = args.vis
     Global.Print = args.v
     Global.device = torch.device('cpu' if args.cpu else 'cuda')
-
+    Global.add_splits = args.add_splits
     directory = args.img_folder
 
 
