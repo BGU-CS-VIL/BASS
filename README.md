@@ -4,6 +4,8 @@
 
 This is the official code for our ICCV 2019 paper, "Bayesian Adaptive Superpixel Segmentation", co-authored by Roy Uziel, Meitar Ronen, and Oren Freifeld.
 
+You can run the code using gpu/cpu.
+
 # Installation
 
 The code uses Python 3.6 and it was tested on Pytorch 1.3.0
