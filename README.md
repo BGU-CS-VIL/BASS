@@ -47,7 +47,7 @@ python BASS.py --img_folder /path/to/image/folder --vis
 ```
 Run without gpu
 ```
-python BASS --img_folder /path/to/image/folder --cpu
+python BASS.py --img_folder /path/to/image/folder --cpu
 ```
 # License
 
