@@ -46,19 +46,21 @@ def initVariables():
     global exp_name
     global csv
     global Print
+    global device
     covarince_estimation=True
     split_merges=True
     K_C_HIGH = 999
     K_C_LOW =  0
 
     Sintel = False
-    Padding = torch.nn.ConstantPad2d((1, 1, 1, 1), (-1)).cuda()
-    Padding0 = torch.nn.ConstantPad2d((1, 1, 1, 1), 0).cuda()
+    Padding = torch.nn.ConstantPad2d((1, 1, 1, 1), (-1)).to(device)
+    Padding0 = torch.nn.ConstantPad2d((1, 1, 1, 1), 0).to(device)
+
 
     neig_num = 4
     potts_area = 25
 
-    Beta_P = torch.from_numpy(np.array([2.7], dtype=np.float)).cuda().float()
+    Beta_P = torch.from_numpy(np.array([2.7], dtype=np.float)).to(device).float()
     C_prior = 50
 
     ALPHA_MS = 2675
@@ -193,25 +195,25 @@ def initVariables():
     X = np.zeros((D, N))
     M = np.eye(D) * (1.0 / 100) * 0
     M_0 = np.eye(d) * 100000 * 0
-    LOOKUP_TABLE = torch.from_numpy(my_connectivity.Create_LookupTable()).cuda().byte()
+    LOOKUP_TABLE = torch.from_numpy(my_connectivity.Create_LookupTable()).to(device).byte()
     LOOKUP_TABLE_CUDA = my_connectivity.Create_LookupTable()
 
-    M_T = torch.from_numpy(M).cuda().float()
-    ETA_T = torch.from_numpy(ETA).cuda().float()
-    M_0_T = torch.from_numpy(M_0).cuda().float()
-    ALPHA_T = torch.tensor(ALPHA).cuda().float()
-    D_T = torch.tensor(D).cuda().float()
-    BETA_T = torch.tensor(BETA).cuda().float()
-    M_ETA_T = M_T @ ETA_T.cuda().float()
-    ETA_M_ETA_T = (ETA_T.transpose(0, 1) @ M_T @ (ETA_T)).cuda().float()
-    inf_T = torch.tensor(np.inf, dtype=torch.float).cuda()
-    log1_T = torch.from_numpy(np.array([np.log(1)], dtype=np.float)).cuda().float()
-    one_T = torch.from_numpy(np.array([1], dtype=np.float)).cuda().float()
-    logSmall_T = torch.from_numpy(np.array([np.log(0.0000001)], dtype=np.float)).cuda().float()
-    small_T = torch.from_numpy(np.array([0.0000001], dtype=np.float)).cuda().float()
-    WIDTH_T = torch.tensor(WIDTH).cuda().int()
-    opt_scale_T = torch.from_numpy(np.array([opt_scale], dtype=np.float)).cuda().float()
-    PI_0_T = torch.from_numpy(np.array([PI_0], dtype=np.float)).cuda().float()
+    M_T = torch.from_numpy(M).to(device).float()
+    ETA_T = torch.from_numpy(ETA).to(device).float()
+    M_0_T = torch.from_numpy(M_0).to(device).float()
+    ALPHA_T = torch.tensor(ALPHA).to(device).float()
+    D_T = torch.tensor(D).to(device).float()
+    BETA_T = torch.tensor(BETA).to(device).float()
+    M_ETA_T = M_T @ ETA_T.to(device).float()
+    ETA_M_ETA_T = (ETA_T.transpose(0, 1) @ M_T @ (ETA_T)).to(device).float()
+    inf_T = torch.tensor(np.inf, dtype=torch.float).to(device)
+    log1_T = torch.from_numpy(np.array([np.log(1)], dtype=np.float)).to(device).float()
+    one_T = torch.from_numpy(np.array([1], dtype=np.float)).to(device).float()
+    logSmall_T = torch.from_numpy(np.array([np.log(0.0000001)], dtype=np.float)).to(device).float()
+    small_T = torch.from_numpy(np.array([0.0000001], dtype=np.float)).to(device).float()
+    WIDTH_T = torch.tensor(WIDTH).to(device).int()
+    opt_scale_T = torch.from_numpy(np.array([opt_scale], dtype=np.float)).to(device).float()
+    PI_0_T = torch.from_numpy(np.array([PI_0], dtype=np.float)).to(device).float()
 
     idx_all = np.arange(0, N)
 
@@ -257,25 +259,25 @@ def initVariables():
     i += 1
     j += 1
     inside_padded = i * (WIDTH + 2) + j
-    inside_padded = torch.from_numpy(inside_padded).cuda().long()
+    inside_padded = torch.from_numpy(inside_padded).to(device).long()
     idx_pixels = i_idx + j_idx
 
-    idx_all = torch.from_numpy(idx_all).cuda()
-    idx_pixels_1 = torch.from_numpy(idx_pixels3).cuda().long()
-    idx_pixels_2 = torch.from_numpy(idx_pixels2).cuda().long()
-    idx_pixels_3 = torch.from_numpy(idx_pixels1).cuda().long()
-    idx_pixels_4 = torch.from_numpy(idx_pixels4).cuda().long()
+    idx_all = torch.from_numpy(idx_all).to(device)
+    idx_pixels_1 = torch.from_numpy(idx_pixels3).to(device).long()
+    idx_pixels_2 = torch.from_numpy(idx_pixels2).to(device).long()
+    idx_pixels_3 = torch.from_numpy(idx_pixels1).to(device).long()
+    idx_pixels_4 = torch.from_numpy(idx_pixels4).to(device).long()
 
-    idx_1 = torch.from_numpy(idx1).cuda()
-    idx_2 = torch.from_numpy(idx2).cuda()
-    idx_3 = torch.from_numpy(idx3).cuda()
-    idx_4 = torch.from_numpy(idx4).cuda()
+    idx_1 = torch.from_numpy(idx1).to(device)
+    idx_2 = torch.from_numpy(idx2).to(device)
+    idx_3 = torch.from_numpy(idx3).to(device)
+    idx_4 = torch.from_numpy(idx4).to(device)
 
-    shift = torch.from_numpy(np.array([0, 1, 2, 3, 4, 5, 6, 7])).cuda().byte().unsqueeze(0).unsqueeze(2)
-    shift_index = torch.from_numpy(np.array([0, 1, 2, 3, 5, 6, 7, 8])).cuda().long()
-    ne4_idx = torch.from_numpy(np.array([1, 3, 4, 5, 7])).cuda().long()
-    ne4_idx_split = torch.from_numpy(np.array([-(WIDTH), -1, 0, 1, WIDTH])).cuda().long()
-    N_index = torch.arange(0, N).cuda()
+    shift = torch.from_numpy(np.array([0, 1, 2, 3, 4, 5, 6, 7])).to(device).byte().unsqueeze(0).unsqueeze(2)
+    shift_index = torch.from_numpy(np.array([0, 1, 2, 3, 5, 6, 7, 8])).to(device).long()
+    ne4_idx = torch.from_numpy(np.array([1, 3, 4, 5, 7])).to(device).long()
+    ne4_idx_split = torch.from_numpy(np.array([-(WIDTH), -1, 0, 1, WIDTH])).to(device).long()
+    N_index = torch.arange(0, N).to(device)
 
     c_idx = np.zeros((N, 5))
 
@@ -310,7 +312,7 @@ def initVariables():
             c_idx[temp_idx, 4] = temp_idx
 
     c_idx = c_idx[:, 0:neig_num]
-    c_idx = torch.from_numpy(c_idx).cuda().long().reshape(-1)
+    c_idx = torch.from_numpy(c_idx).to(device).long().reshape(-1)
 
     c_idx_9 = np.zeros((N, 9))
 
@@ -385,7 +387,7 @@ def initVariables():
             for m in range(0, 9):
                 if (c_idx_9[temp_idx, m] == -1):
                     b = 5
-    c_idx_9 = torch.from_numpy(c_idx_9).cuda().long().reshape(-1)
+    c_idx_9 = torch.from_numpy(c_idx_9).to(device).long().reshape(-1)
 
     matrix = np.arange(0, N).reshape(HEIGHT, WIDTH)
     padded_matrix = np.pad(matrix, 5, pad_with, padder=-1)
@@ -396,7 +398,7 @@ def initVariables():
             c_idx_25[temp_idx] = padded_matrix[i - 2:i + 3, j - 2:j + 3].reshape(-1)
             c_idx_25[temp_idx] = np.where(c_idx_25[temp_idx] == -1, padded_matrix[i, j], c_idx_25[temp_idx])
 
-    c_idx_25 = torch.from_numpy(c_idx_25).cuda().long().reshape(-1)
+    c_idx_25 = torch.from_numpy(c_idx_25).to(device).long().reshape(-1)
     padded_matrix = np.pad(matrix, 7, pad_with, padder=-1)
 
     if (potts_area == 49):
@@ -408,47 +410,47 @@ def initVariables():
                 c_idx_25[temp_idx] = padded_matrix[i - 3:i + 4, j - 3:j + 4].reshape(-1)
                 c_idx_25[temp_idx] = np.where(c_idx_25[temp_idx] == -1, padded_matrix[i, j], c_idx_25[temp_idx])
 
-        c_idx_25 = torch.from_numpy(c_idx_25).cuda().long().reshape(-1)
+        c_idx_25 = torch.from_numpy(c_idx_25).to(device).long().reshape(-1)
 
     A_prior = N / (K_C)
     PSI_prior = A_prior * A_prior * np.eye(2)
-    det_PSI = torch.from_numpy(np.array([det(PSI_prior)])).cuda().float()
+    det_PSI = torch.from_numpy(np.array([det(PSI_prior)])).to(device).float()
     NI_prior = C_prior * A_prior
-    C_prior = torch.from_numpy(np.array([C_prior], dtype=np.float)).cuda().float()
-    NI_prior = torch.from_numpy(np.array([NI_prior - 3], dtype=np.float)).cuda().float()
-    PSI_prior = torch.from_numpy(PSI_prior).cuda().float().reshape(-1)
-    argmax_range = torch.from_numpy(np.arange(0, N * (K_C + 1), K_C + 1)).cuda()
-    ones = torch.ones(N).cuda()
-    zeros = torch.zeros(N).cuda()
-    X_C_X1 = torch.arange(0, N * 5 * 12, 12).cuda()
-    X_C_X2 = torch.arange(5, N * 5 * 12, 12).cuda()
-    X_C_Y1 = torch.arange(1, N * 5 * 12, 12).cuda()
-    X_C_Y2 = torch.arange(6, N * 5 * 12, 12).cuda()
+    C_prior = torch.from_numpy(np.array([C_prior], dtype=np.float)).to(device).float()
+    NI_prior = torch.from_numpy(np.array([NI_prior - 3], dtype=np.float)).to(device).float()
+    PSI_prior = torch.from_numpy(PSI_prior).to(device).float().reshape(-1)
+    argmax_range = torch.from_numpy(np.arange(0, N * (K_C + 1), K_C + 1)).to(device)
+    ones = torch.ones(N).to(device)
+    zeros = torch.zeros(N).to(device)
+    X_C_X1 = torch.arange(0, N * 5 * 12, 12).to(device)
+    X_C_X2 = torch.arange(5, N * 5 * 12, 12).to(device)
+    X_C_Y1 = torch.arange(1, N * 5 * 12, 12).to(device)
+    X_C_Y2 = torch.arange(6, N * 5 * 12, 12).to(device)
 
-    SIGMA_XY_X1 = torch.cat((torch.arange(0, N * 5 * 8, 8), torch.arange(1, N * 5 * 8, 8))).cuda()
-    SIGMA_XY_Y1 = torch.cat((torch.arange(2, N * 5 * 8, 8), torch.arange(3, N * 5 * 8, 8))).cuda()
-    SIGMA_XY_X2 = torch.cat((torch.arange(4, N * 5 * 8, 8), torch.arange(5, N * 5 * 8, 8))).cuda()
-    SIGMA_XY_Y2 = torch.cat((torch.arange(6, N * 5 * 8, 8), torch.arange(7, N * 5 * 8, 8))).cuda()
+    SIGMA_XY_X1 = torch.cat((torch.arange(0, N * 5 * 8, 8), torch.arange(1, N * 5 * 8, 8))).to(device)
+    SIGMA_XY_Y1 = torch.cat((torch.arange(2, N * 5 * 8, 8), torch.arange(3, N * 5 * 8, 8))).to(device)
+    SIGMA_XY_X2 = torch.cat((torch.arange(4, N * 5 * 8, 8), torch.arange(5, N * 5 * 8, 8))).to(device)
+    SIGMA_XY_Y2 = torch.cat((torch.arange(6, N * 5 * 8, 8), torch.arange(7, N * 5 * 8, 8))).to(device)
 
     a = 3
     SIGMA_INT_FLOW = torch.from_numpy(
         np.array([1.0 / int_scale, 1.0 / int_scale, 1.0 / int_scale, 1.0 / opt_scale, 1.0 / opt_scale])).unsqueeze(
-        0).unsqueeze(0).float().cuda()
+        0).unsqueeze(0).float().to(device)
     SIGMA_INT = torch.from_numpy(np.array([1.0 / int_scale, 1.0 / int_scale, 1.0 / int_scale])).unsqueeze(0).unsqueeze(
-        0).float().cuda()
-    PI = torch.from_numpy(np.array([np.pi])).float().cuda()
+        0).float().to(device)
+    PI = torch.from_numpy(np.array([np.pi])).float().to(device)
     D_ = 5
     D_Inv = 4
 
-    Epsilon = torch.zeros(N).cuda().float() + 0.000000001
-    split_lvl = torch.zeros(N).cuda(0).float()
-    Distances_padded = torch.zeros(2, ((HEIGHT + 2) * (WIDTH + 2))).float().cuda().transpose(0, 1)
-    Cluster_2_pixel = torch.zeros(2, ((HEIGHT + 2) * (WIDTH + 2))).float().cuda().transpose(0, 1)
-    Cluster_2_pixel[:, 0] = torch.arange(0, (HEIGHT + 2) * (WIDTH + 2)).int().cuda()
-    neig_padded = torch.from_numpy(np.array([-1, 1, -(WIDTH + 2), (WIDTH + 2)])).cuda().int()
+    Epsilon = torch.zeros(N).to(device).float() + 0.000000001
+    split_lvl = torch.zeros(N).to(device).float()
+    Distances_padded = torch.zeros(2, ((HEIGHT + 2) * (WIDTH + 2))).float().to(device).transpose(0, 1)
+    Cluster_2_pixel = torch.zeros(2, ((HEIGHT + 2) * (WIDTH + 2))).float().to(device).transpose(0, 1)
+    Cluster_2_pixel[:, 0] = torch.arange(0, (HEIGHT + 2) * (WIDTH + 2)).int().to(device)
+    neig_padded = torch.from_numpy(np.array([-1, 1, -(WIDTH + 2), (WIDTH + 2)])).to(device).int()
 
     detInt = int_scale * int_scale * int_scale
-    detInt = torch.from_numpy(np.array([detInt], dtype=np.float)).cuda().float()
+    detInt = torch.from_numpy(np.array([detInt], dtype=np.float)).to(device).float()
 
 
 def pad_with(vector, pad_width, iaxis, kwargs):
@@ -456,4 +458,3 @@ def pad_with(vector, pad_width, iaxis, kwargs):
     vector[:pad_width[0]] = pad_value
     vector[-pad_width[1]:] = pad_value
     return vector
-

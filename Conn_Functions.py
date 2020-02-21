@@ -108,7 +108,7 @@ def Split(prev_r_ik,split_prev_r_ik,c1,c1_idx,idx_rand,clusters_LR,it_split):
         return 0
 
     neigh=Global.neig_padded
-    dataL=torch.zeros((Global.HEIGHT+2)*(Global.WIDTH+2),2).cuda().int()
+    dataL=torch.zeros((Global.HEIGHT+2)*(Global.WIDTH+2),2).to(Global.device).int()
     dataL[:,0]=torch.arange(0,(Global.HEIGHT+2)*(Global.WIDTH+2)).int()
     data2=dataL.clone()
     dataR=dataL.clone()
@@ -150,9 +150,9 @@ def Split(prev_r_ik,split_prev_r_ik,c1,c1_idx,idx_rand,clusters_LR,it_split):
 
 
     idx=idx_rand.long()
-    idx_args=torch.arange(0,idx.shape[0]).cuda()
+    idx_args=torch.arange(0,idx.shape[0]).to(Global.device)
     split_idx=torch.masked_select(dataL[:,0],distances[:,1]>0).long()
-    idx_final=torch.zeros(idx.shape[0],2).cuda()
+    idx_final=torch.zeros(idx.shape[0],2).to(Global.device)
     idx_final[:,0]=idx_args
     idx_final[:,0]=idx
     padded_matrix = Global.Padding0(split_prev_r_ik).reshape(-1)
@@ -164,15 +164,15 @@ def Split(prev_r_ik,split_prev_r_ik,c1,c1_idx,idx_rand,clusters_LR,it_split):
     idx=idx.long()
     data2[idx,1]=Global.N_index[0:idx.shape[0]].int()+2+torch.max(split_prev_r_ik.reshape(-1)).int()
 
-    dataR[new_cluster_idx.long(),1]= ( Global.Padding0(split_prev_r_ik).reshape(-1).cuda()[new_cluster_idx]).int()
-    dataR[new_cluster_idx.long(),1]=(data2[( Global.Padding0(split_prev_r_ik).reshape(-1).cuda()[new_cluster_idx]).long(),1])
+    dataR[new_cluster_idx.long(),1]= ( Global.Padding0(split_prev_r_ik).reshape(-1).to(Global.device)[new_cluster_idx]).int()
+    dataR[new_cluster_idx.long(),1]=(data2[( Global.Padding0(split_prev_r_ik).reshape(-1).to(Global.device)[new_cluster_idx]).long(),1])
     padded_matrix[new_cluster_idx.long()]=(dataR[new_cluster_idx.long(),1].long()).clone()
     clusters_LR[:,1].zero_()
     clusters_LR[idx,1]=data2[idx,1]
 
     prev_r_ik_padded =  Global.Padding0(prev_r_ik).reshape(-1)
 
-    prev_r_ik_padded[split_idx.long()]=( Global.Padding0(split_prev_r_ik.cuda()).reshape(-1)[split_idx.long()]).clone() #NEW
+    prev_r_ik_padded[split_idx.long()]=( Global.Padding0(split_prev_r_ik.to(Global.device)).reshape(-1)[split_idx.long()]).clone() #NEW
 
     padded_matrix=padded_matrix.reshape(Global.HEIGHT+2,-1)
 
@@ -181,12 +181,12 @@ def Split(prev_r_ik,split_prev_r_ik,c1,c1_idx,idx_rand,clusters_LR,it_split):
 
 
 def Merge(prev_r_ik,split_prev_r_ik,clusters_LR):
-    padding = torch.nn.ConstantPad2d((1, 1, 1, 1), 0).cuda()
-    padded_matrix = padding(prev_r_ik).reshape(-1).cuda()
-    padded_matrix_split = padding(split_prev_r_ik).reshape(-1).cuda()
+    padding = torch.nn.ConstantPad2d((1, 1, 1, 1), 0).to(Global.device)
+    padded_matrix = padding(prev_r_ik).reshape(-1).to(Global.device)
+    padded_matrix_split = padding(split_prev_r_ik).reshape(-1).to(Global.device)
 
-    left=torch.zeros(Global.K_C+1).int().cuda()
-    pair=torch.zeros(Global.K_C+1).int().cuda()
+    left=torch.zeros(Global.K_C+1).int().to(Global.device)
+    pair=torch.zeros(Global.K_C+1).int().to(Global.device)
 
     ind_left=torch.masked_select(Global.inside_padded,((padded_matrix[Global.inside_padded]==padded_matrix[Global.inside_padded-1])&(padded_matrix[Global.inside_padded-1]>0)))
     left[padded_matrix[ind_left]]=padded_matrix[ind_left-1].int()
@@ -202,7 +202,7 @@ def Merge(prev_r_ik,split_prev_r_ik,clusters_LR):
                     pair[val]=i
                     pair[i]=i
 
-    pair_temp=torch.arange(0,Global.K_C+1).cuda().int()
+    pair_temp=torch.arange(0,Global.K_C+1).to(Global.device).int()
     pair_new=torch.where(pair>0,pair,pair_temp)
 
     padded_matrix=pair_new[padded_matrix]

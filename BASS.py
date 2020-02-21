@@ -50,16 +50,16 @@ def Merge(X,argmax,Nk,it_merge,temp_b,m_v_father_b,m_v_sons_b,b_father_b,b_sons_
         """Merge step
 
         **Parameters**:
-         - :math:`X[N,D]` - Projection matrix  [Number of pixels, Dimenstion of the data].
+         - :math:`X[N,D]` - Data matrix  [Number of pixels, Dimenstion of the data].
 
          - :math:`argmax[N,2]' Pixel to SP matrix
 
         **Returns**:
          - Update argmax, and split_lvl
         """
-        padded_matrix = Global.Padding0(argmax[:,0].reshape(Global.HEIGHT,-1)).reshape(-1).cuda()
-        pair = torch.zeros(Global.K_C + 1).int().cuda()
-        left = torch.zeros(Global.K_C + 1,2).int().cuda()
+        padded_matrix = Global.Padding0(argmax[:,0].reshape(Global.HEIGHT,-1)).reshape(-1).to(Global.device)
+        pair = torch.zeros(Global.K_C + 1).int().to(Global.device)
+        left = torch.zeros(Global.K_C + 1,2).int().to(Global.device)
         left[:,0]=torch.arange(0,Global.K_C+1)
         left[:,0]=Global.N_index[0:Global.K_C+1]
 
@@ -85,39 +85,6 @@ def Merge(X,argmax,Nk,it_merge,temp_b,m_v_father_b,m_v_sons_b,b_father_b,b_sons_
                     padded_matrix[Global.inside_padded + (Global.WIDTH+2)] > 0)))
             left[padded_matrix[ind_left], 1] = padded_matrix[ind_left + (Global.WIDTH+2)].int()
 
-        ind_left,_=torch.sort(ind_left)
-        sorted, indices = torch.sort(padded_matrix[ind_left])
-        Nk.zero_()
-        Nk.index_add_(0, sorted, Global.ones[0:sorted.shape[0]])
-        temp = temp_b[0:Global.K_C + 1].zero_()
-        tempNk=torch.cumsum(Nk,0).long()
-
-        temp_ind=ind_left[indices.long()].long()
-
-
-        if(it_merge%4==0):
-            temp[padded_matrix[temp_ind].long(), tempNk[padded_matrix[temp_ind].long()].long() - Global.N_index[0:ind_left.shape[0]].long()] = padded_matrix[temp_ind - 1].long()
-
-        if (it_merge%4 == 1):
-            temp[padded_matrix[temp_ind].long(), tempNk[padded_matrix[temp_ind].long()].long() - Global.N_index[
-                                                                                                 0:ind_left.shape[
-                                                                                                     0]].long()] = \
-            padded_matrix[temp_ind + 1].long()
-
-        if (it_merge%4 == 2):
-            temp[padded_matrix[temp_ind].long(), tempNk[padded_matrix[temp_ind].long()].long() - Global.N_index[
-                                                                                                 0:ind_left.shape[
-                                                                                                     0]].long()] = \
-            padded_matrix[temp_ind - (Global.WIDTH+2)].long()
-
-        if (it_merge%4 == 3):
-            temp[padded_matrix[temp_ind].long(), tempNk[padded_matrix[temp_ind].long()].long() - Global.N_index[
-                                                                                                 0:ind_left.shape[
-                                                                                                     0]].long()] = \
-            padded_matrix[temp_ind + (Global.WIDTH+2)].long()
-
-
-        left[:,1]=torch.max(temp,dim=1)[0]
         it_merge=it_merge+1
 
 
@@ -139,8 +106,8 @@ def Merge(X,argmax,Nk,it_merge,temp_b,m_v_father_b,m_v_sons_b,b_father_b,b_sons_
         Nk = Nk + 0.0000000001
 
         Nk_merged=torch.add(Nk,Nk[left[:,1].long()])
-        alpha=torch.Tensor([float(1000000)]).cuda()
-        beta=torch.Tensor([Global.int_scale*alpha+Global.int_scale]).cuda()
+        alpha=torch.Tensor([float(1000000)]).to(Global.device)
+        beta=torch.Tensor([Global.int_scale*alpha+Global.int_scale]).to(Global.device)
         v_father = Nk
         v_merged = Nk_merged
 
@@ -201,8 +168,8 @@ def Merge(X,argmax,Nk,it_merge,temp_b,m_v_father_b,m_v_sons_b,b_father_b,b_sons_
         ll_2_merged = torch.div(torch.add(ll_2_merged, -ll_merged_min), (ll_merged_max - ll_merged_min)) * (-10000) + 0.1
         ll_2_father = torch.div(torch.add(ll_2_father, -ll_merged_min), (ll_merged_max - ll_merged_min))*(-10000) + 0.1
 
-        gamma_alpha_2=torch.mvlgamma(torch.Tensor([Global.ALPHA_MS2/2]).cuda(),1)
-        gamma_alpha=torch.mvlgamma(torch.Tensor([Global.ALPHA_MS2]).cuda(),1)
+        gamma_alpha_2=torch.mvlgamma(torch.Tensor([Global.ALPHA_MS2/2]).to(Global.device),1)
+        gamma_alpha=torch.mvlgamma(torch.Tensor([Global.ALPHA_MS2]).to(Global.device),1)
 
         gamma_father=torch.mvlgamma(Nk,1)
         gamma_add_father=torch.mvlgamma(Nk_merged,1)
@@ -215,7 +182,7 @@ def Merge(X,argmax,Nk,it_merge,temp_b,m_v_father_b,m_v_sons_b,b_father_b,b_sons_
                gamma_alpha_father[left[:, 1].long()] - gamma_father[left[:, 1].long()] - 2 + \
                ll_2_merged[left[:, 0].long()] - ll_2_father[left[:, 0].long()] - ll_2_father[[left[:, 1].long()]]
 
-        prob=torch.where(((left[:,0]==left[:,1])+(left[:,1]==0))>0,-torch.Tensor([float("inf")]).cuda(),prob)
+        prob=torch.where(((left[:,0]==left[:,1])+(left[:,1]==0))>0,-torch.Tensor([float("inf")]).to(Global.device),prob)
 
         idx_rand=torch.where(torch.exp(prob) > 1.0, Global.N_index[0:prob.shape[0]].long(),Global.zeros[0:prob.shape[0]].long()).nonzero()[:, 0]
 
@@ -238,10 +205,10 @@ def Split(X,XXT,argmax,Nk,sons_LL_b,X_sons_b,X_father_b,father_LL_b,C1,c1_temp,c
     K_C_Split=torch.max(argmax[:,1])+1
     if(Nk.shape[0]>K_C_Split):
         K_C_Split=Nk.shape[0]
-    Nk_s = torch.zeros(K_C_Split).float().cuda()
+    Nk_s = torch.zeros(K_C_Split).float().to(Global.device)
     Nk.zero_()
     a_prior_sons = Nk_s
-    Global.psi_prior_sons = torch.mul(torch.pow(a_prior_sons, 2).unsqueeze(1), torch.eye(2).reshape(-1, 4).cuda())
+    Global.psi_prior_sons = torch.mul(torch.pow(a_prior_sons, 2).unsqueeze(1), torch.eye(2).reshape(-1, 4).to(Global.device))
     Global.ni_prior_sons = (Global.C_prior * a_prior_sons) - 3
     Nk.index_add_(0, argmax[:, 0], Global.ones)
     Nk = Nk + 0.0000000001
@@ -323,8 +290,8 @@ def Split(X,XXT,argmax,Nk,sons_LL_b,X_sons_b,X_father_b,father_LL_b,C1,c1_temp,c
 
 
 
-    alpha=torch.Tensor([float(1000000)]).cuda()
-    beta=torch.Tensor([Global.int_scale*alpha+Global.int_scale]).cuda()
+    alpha=torch.Tensor([float(1000000)]).to(Global.device)
+    beta=torch.Tensor([Global.int_scale*alpha+Global.int_scale]).to(Global.device)
     Nk.zero_()
     Nk_s.zero_()
     Nk.index_add_(0, argmax[:, 0], Global.ones)
@@ -388,7 +355,7 @@ def Split(X,XXT,argmax,Nk,sons_LL_b,X_sons_b,X_father_b,father_LL_b,C1,c1_temp,c
 
     gamma_1_sons=torch.mvlgamma(Nk_s,1)
     gamma_1_father=torch.mvlgamma(Nk,1)
-    ll_sons=torch.where(Nk_s[0:ll_sons.shape[0]]<35,Global.zeros[0:ll_sons.shape[0]]- torch.Tensor([float("inf")]).cuda(),ll_sons)
+    ll_sons=torch.where(Nk_s[0:ll_sons.shape[0]]<35,Global.zeros[0:ll_sons.shape[0]]- torch.Tensor([float("inf")]).to(Global.device),ll_sons)
     ind_sons=clusters_LR[0:gamma_1_sons.shape[0]].long()
     ind_sons[ind_sons>ll_sons.shape[0]-1]=0 #TODO:Check if relevant
     prob=(Global.ALPHA_MS)+\
@@ -402,7 +369,7 @@ def Split(X,XXT,argmax,Nk,sons_LL_b,X_sons_b,X_father_b,father_LL_b,C1,c1_temp,c
     idx_rand=torch.where(torch.exp(prob) > 1.0, Global.N_index[0:prob.shape[0]].long(),Global.zeros[0:prob.shape[0]].long()).nonzero()[:, 0]
     if(Global.Print):
         print("Idx Split Size: ",idx_rand.shape[0])
-    left = torch.zeros(Global.K_C + 1, 2).int().cuda()
+    left = torch.zeros(Global.K_C + 1, 2).int().to(Global.device)
     left[:, 0] = Global.N_index[0:Global.K_C + 1]
     left[idx_rand,1]=1
     pixels_to_change = left[argmax[:,0],1]
@@ -431,61 +398,61 @@ def Bass(X, loc):
                        [0., 0., 0., 0., Global.int_scale]])
 
 
-    X = torch.from_numpy(X).cuda().float()
-    SIGMA1 = torch.from_numpy(SIGMA1).cuda().float()
-    loc = torch.from_numpy(loc).cuda().float()
+    X = torch.from_numpy(X).to(Global.device).float()
+    SIGMA1 = torch.from_numpy(SIGMA1).to(Global.device).float()
+    loc = torch.from_numpy(loc).to(Global.device).float()
 
-    index2_buffer = torch.zeros(Global.N).cuda()
-    r_ikNew_buffer = torch.zeros((Global.N, 5)).cuda().reshape(-1)
+    index2_buffer = torch.zeros(Global.N).to(Global.device)
+    r_ikNew_buffer = torch.zeros((Global.N, 5)).to(Global.device).reshape(-1)
 
-    range1 = torch.arange(0, Global.N * Global.D_*Global.neig_num).cuda()
-    range3 = torch.arange(0, Global.N * Global.neig_num).cuda()
-    range4 = torch.arange(0, Global.N * Global.neig_num * Global.D_Inv).cuda()
+    range1 = torch.arange(0, Global.N * Global.D_*Global.neig_num).to(Global.device)
+    range3 = torch.arange(0, Global.N * Global.neig_num).to(Global.device)
+    range4 = torch.arange(0, Global.N * Global.neig_num * Global.D_Inv).to(Global.device)
 
-    range_conn = (torch.arange(Global.N) * Global.neig_num).cuda()
+    range_conn = (torch.arange(Global.N) * Global.neig_num).to(Global.device)
 
-    c1_temp = torch.zeros((Global.N * Global.D_* Global.neig_num)).cuda()
+    c1_temp = torch.zeros((Global.N * Global.D_* Global.neig_num)).to(Global.device)
 
-    pi_temp = torch.zeros((Global.N * Global.neig_num)).cuda()
+    pi_temp = torch.zeros((Global.N * Global.neig_num)).to(Global.device)
 
-    SigmaXY_temp = torch.zeros((Global.N * Global.neig_num * Global.D_Inv)).cuda().float()
-    logdet_temp = torch.zeros((Global.N * Global.neig_num)).cuda()
-
-
-    SigmaXY_s = torch.zeros(((Global.K_C + 1)*2, Global.D_Inv)).cuda().float()
-    SigmaXY_i_s = torch.zeros((Global.K_C + 1)*2, Global.D_Inv).cuda().float()
+    SigmaXY_temp = torch.zeros((Global.N * Global.neig_num * Global.D_Inv)).to(Global.device).float()
+    logdet_temp = torch.zeros((Global.N * Global.neig_num)).to(Global.device)
 
 
-    SIGMAxylab = torch.zeros((Global.K_C + 1, Global.D_,Global.D_)).cuda().float()
+    SigmaXY_s = torch.zeros(((Global.K_C + 1)*2, Global.D_Inv)).to(Global.device).float()
+    SigmaXY_i_s = torch.zeros((Global.K_C + 1)*2, Global.D_Inv).to(Global.device).float()
+
+
+    SIGMAxylab = torch.zeros((Global.K_C + 1, Global.D_,Global.D_)).to(Global.device).float()
     SIGMAxylab[:, 2, 2] = Global.int_scale
     SIGMAxylab[:, 3, 3] = Global.int_scale
     SIGMAxylab[:, 4, 4] = Global.int_scale
 
-    SIGMAxylab_s = torch.zeros(((Global.K_C + 1)*2, Global.D_,Global.D_)).cuda().float()
+    SIGMAxylab_s = torch.zeros(((Global.K_C + 1)*2, Global.D_,Global.D_)).to(Global.device).float()
     SIGMAxylab_s[:, 2, 2] = Global.int_scale
     SIGMAxylab_s[:, 3, 3] = Global.int_scale
     SIGMAxylab_s[:, 4, 4] = Global.int_scale
 
 
-    Nk_s= torch.zeros((Global.K_C + 1)*2).float().cuda()
-    X1_s=torch.zeros((Global.K_C+1)*2,Global.D_).float().cuda()
+    Nk_s= torch.zeros((Global.K_C + 1)*2).float().to(Global.device)
+    X1_s=torch.zeros((Global.K_C+1)*2,Global.D_).float().to(Global.device)
 
 
-    X2_00_s = torch.zeros((Global.K_C + 1)*2).float().cuda()
-    X2_01_s = torch.zeros((Global.K_C + 1)*2).float().cuda()
-    X2_11_s = torch.zeros((Global.K_C + 1)*2).float().cuda()
+    X2_00_s = torch.zeros((Global.K_C + 1)*2).float().to(Global.device)
+    X2_01_s = torch.zeros((Global.K_C + 1)*2).float().to(Global.device)
+    X2_11_s = torch.zeros((Global.K_C + 1)*2).float().to(Global.device)
 
-    X_C_SIGMA = torch.zeros(Global.N, Global.neig_num, Global.D_).float().cuda()
-    sum_buffer = torch.zeros(Global.N).float().cuda()
-    clusters_LR=torch.zeros((Global.HEIGHT)*(Global.WIDTH),2).cuda().int()
+    X_C_SIGMA = torch.zeros(Global.N, Global.neig_num, Global.D_).float().to(Global.device)
+    sum_buffer = torch.zeros(Global.N).float().to(Global.device)
+    clusters_LR=torch.zeros((Global.HEIGHT)*(Global.WIDTH),2).to(Global.device).int()
     clusters_LR[:,0]=torch.arange(0,(Global.HEIGHT)*(Global.WIDTH)).int()
     XXT=torch.bmm(X[:, 0:2].unsqueeze(2),X[:, 0:2].unsqueeze(1)).reshape(-1,4)
-    distances_buffer=torch.zeros(Global.N*Global.neig_num*Global.D_).float().cuda()
-    r_ik_5=torch.zeros(Global.N,Global.neig_num).float().cuda()
-    neig_buffer=torch.zeros(Global.N,Global.neig_num,Global.potts_area).float().cuda()
-    sumP_buffer=torch.zeros(Global.N,Global.neig_num).float().cuda()
-    X_C_buffer=torch.zeros(Global.N,Global.neig_num, Global.D_).float().cuda()
-    X_C_SIGMA_buf=torch.zeros(Global.N,Global.neig_num,2).float().cuda()
+    distances_buffer=torch.zeros(Global.N*Global.neig_num*Global.D_).float().to(Global.device)
+    r_ik_5=torch.zeros(Global.N,Global.neig_num).float().to(Global.device)
+    neig_buffer=torch.zeros(Global.N,Global.neig_num,Global.potts_area).float().to(Global.device)
+    sumP_buffer=torch.zeros(Global.N,Global.neig_num).float().to(Global.device)
+    X_C_buffer=torch.zeros(Global.N,Global.neig_num, Global.D_).float().to(Global.device)
+    X_C_SIGMA_buf=torch.zeros(Global.N,Global.neig_num,2).float().to(Global.device)
 
     init=True
     it_merge=0
@@ -493,31 +460,31 @@ def Bass(X, loc):
 
     "Start Creating Buffers"
 
-    SigmaXY_b = torch.zeros((Global.N + 1, Global.D_Inv)).cuda().float()
-    SigmaXY_i_b = torch.zeros((Global.N + 1, Global.D_Inv)).cuda().float()
+    SigmaXY_b = torch.zeros((Global.N + 1, Global.D_Inv)).to(Global.device).float()
+    SigmaXY_i_b = torch.zeros((Global.N + 1, Global.D_Inv)).to(Global.device).float()
 
-    SIGMAxylab_b = torch.zeros((Global.N + 1, Global.D_, Global.D_)).cuda().float()
+    SIGMAxylab_b = torch.zeros((Global.N + 1, Global.D_, Global.D_)).to(Global.device).float()
     SIGMAxylab_b[:, 2, 2] = Global.int_scale
     SIGMAxylab_b[:, 3, 3] = Global.int_scale
     SIGMAxylab_b[:, 4, 4] = Global.int_scale
 
-    Nk_b = torch.zeros(Global.N + 1).float().cuda()
-    X1_b = torch.zeros(Global.N + 1, Global.D_).float().cuda()
+    Nk_b = torch.zeros(Global.N + 1).float().to(Global.device)
+    X1_b = torch.zeros(Global.N + 1, Global.D_).float().to(Global.device)
 
-    X2_00_b = torch.zeros(Global.N + 1).float().cuda()
-    X2_01_b = torch.zeros(Global.N + 1).float().cuda()
-    X2_11_b = torch.zeros(Global.N + 1).float().cuda()
+    X2_00_b = torch.zeros(Global.N + 1).float().to(Global.device)
+    X2_01_b = torch.zeros(Global.N + 1).float().to(Global.device)
+    X2_11_b = torch.zeros(Global.N + 1).float().to(Global.device)
 
-    sons_LL_b = torch.zeros(Global.N + 1, 4).float().cuda()
-    X_sons_b = torch.zeros(Global.N + 1, 2).float().cuda()
-    X_father_b = torch.zeros(Global.N + 1, 2).float().cuda()
-    father_LL_b = torch.zeros(Global.N + 1, 4).float().cuda()
+    sons_LL_b = torch.zeros(Global.N + 1, 4).float().to(Global.device)
+    X_sons_b = torch.zeros(Global.N + 1, 2).float().to(Global.device)
+    X_father_b = torch.zeros(Global.N + 1, 2).float().to(Global.device)
+    father_LL_b = torch.zeros(Global.N + 1, 4).float().to(Global.device)
 
-    m_v_sons_b = torch.zeros(Global.N + 1, 3).float().cuda()
-    m_v_father_b = torch.zeros(Global.N + 1, 3).float().cuda()
-    b_sons_b = torch.zeros(Global.N + 1, 3).float().cuda()
-    b_father_b = torch.zeros(Global.N + 1, 3).float().cuda()
-    temp_b = torch.zeros((Global.K_C*100), 2000).long().cuda()
+    m_v_sons_b = torch.zeros(Global.N + 1, 3).float().to(Global.device)
+    m_v_father_b = torch.zeros(Global.N + 1, 3).float().to(Global.device)
+    b_sons_b = torch.zeros(Global.N + 1, 3).float().to(Global.device)
+    b_father_b = torch.zeros(Global.N + 1, 3).float().to(Global.device)
+    temp_b = torch.zeros((Global.K_C), 1).long().to(Global.device)
 
     "End Creating Buffers"
 
@@ -546,16 +513,20 @@ def Bass(X, loc):
     fixIt_H = 275
     it = 0
 
-    argmax = torch.from_numpy(r_ik).cuda().unsqueeze(1).repeat(1,2)
+    argmax = torch.from_numpy(r_ik).to(Global.device).unsqueeze(1).repeat(1,2)
     argmax_start=argmax.clone()
 
     argmax=argmax_start.clone()
 
     print("Start")
-    torch.cuda.synchronize()
-    start = torch.cuda.Event(enable_timing=True)
-    end = torch.cuda.Event(enable_timing=True)
-    start.record()
+    if (Global.device == torch.device('cpu')):
+        import time
+        start = time.time()
+    else:
+        torch.cuda.synchronize()
+        start = torch.cuda.Event(enable_timing=True)
+        end = torch.cuda.Event(enable_timing=True)
+        start.record()
     while (it < maxIt and it<1200):
         it += 1
         if (it % 20 == 0):
@@ -597,7 +568,7 @@ def Bass(X, loc):
 
         if(init):
             init=False
-            idx_rand=torch.arange(1,Global.K_C+1).cuda()
+            idx_rand=torch.arange(1,Global.K_C+1).to(Global.device)
             argmax[:,1],split,clusters_LR=my_connectivity.Split(prev_r_ik_max,prev_r_ik_max, C1, c1_temp,idx_rand,clusters_LR,it_split)
             it_split=1
 
@@ -622,9 +593,9 @@ def Bass(X, loc):
             argmax,Nk,original = Split(X,XXT,argmax,Nk,sons_LL_b,X_sons_b,X_father_b,father_LL_b,C1,c1_temp,clusters_LR,it_split,m_v_sons_b,m_v_father_b,b_sons_b,b_father_b,SigmaXY_b,SigmaXY_i_b,SIGMAxylab_b,Nk_b,X1_b,X2_00_b,X2_01_b,X2_11_b)
 
 
-            left2 = torch.zeros(Global.K_C*2 + 1, 2).int().cuda()
-            left2[:, 0] = Global.N_index[0:Global.K_C*2 + 1]
-            left2[:, 1] = Global.N_index[0:Global.K_C*2 + 1]
+            left2 = torch.zeros((Global.K_C+1)*2 , 2).int().to(Global.device)
+            left2[:, 0] = Global.N_index[0:(Global.K_C+1)*2]
+            left2[:, 1] = Global.N_index[0:(Global.K_C+1)*2]
             left2[clusters_LR[idx_rand,1].long(),1]=Global.N_index[0:idx_rand.shape[0]].int()+Global.K_C+1
             original=left2[original,1]
 
@@ -660,11 +631,13 @@ def Bass(X, loc):
             c_idx=c_idx.reshape(-1, Global.neig_num)[:,1]
             argmax[:,0]=torch.where(Nk[argmax[:,0]]==1,c_idx,argmax[:,0])
 
-
-
-    end.record()
-    torch.cuda.synchronize()
-    print("Time taken: ",start.elapsed_time(end))
+    if (Global.device == torch.device('cpu')):
+        end = time.time()
+        print("Time taken: ", end-start)
+    else:
+        end.record()
+        torch.cuda.synchronize()
+        print("Time taken: ",start.elapsed_time(end))
 
     Nk.zero_()
     Nk.index_add_(0, argmax[:, 0], Global.ones)
@@ -767,28 +740,8 @@ def Bass(X, loc):
 
 def E_Step(X, logdet, c1_temp, pi_temp, SigmaXY, X_C_SIGMA, sum, c_idx, c_idx_9, c_idx_25, distances2, r_ik_5, neig, sumP, X_C, X_C_SIGMA_buf):
 
-    """Computes the distances of the projections points for eace centroid and normalize it using :meth:`AngleImpl.softmax`,
-
-    **Parameters**:
-     - :math:`H[N,d,D]` - Projection matrix  [Point number,Dimension of projection, Dimenstion of data].
-
-       :math:`H[:,:,0]=I_x` :math:`H[:,:,1]=I_y`
-
-     - :math:`Y[N,d]` - Projection point [Point number,Dimension of projection].
-
-       :math:`Y[:,0]=-I_t`
-
-     - :math:`C[K+1,D]` - Centroids [Number of clusters + outlayer,Dimenstion of data]
-
-     - Clusters[N,K]- Clusters [Number of points,Number of clusters + outlayer]
-
-    **Returns**:
-     - Distances[K,N*]- Distances [Number of clusters + outlayer,Number of points after threshold] .
-
-     - Clusters[N,K]- Clusters
-     [Number of pסoints,Number of clusters + outlayer] .
-
-    .. note:: Changes the values only for points that passed through the threshold
+    """
+    Computes the distances of the Data points for each centroid and normalize it,
 
     """
     torch.add(X.unsqueeze(1), torch.neg(c1_temp.reshape(-1, Global.neig_num, Global.D_)),out=X_C)
@@ -912,8 +865,7 @@ def M_Step(X, loc, argmax, Sigma, SigmaInv, Nk, X1, X2_00, X2_01, X2_11, init, N
 
 
 
-
-    Global.psi_prior=torch.mul(torch.pow(a_prior,2).unsqueeze(1),torch.eye(2).reshape(-1,4).cuda())
+    Global.psi_prior=torch.mul(torch.pow(a_prior,2).unsqueeze(1),torch.eye(2).reshape(-1,4).to(Global.device))
     Global.ni_prior=(Global.C_prior*a_prior)-3
 
 
@@ -997,6 +949,10 @@ if __name__ == "__main__":
                         default=400,
                         help='initial number of superpixels'
                         )
+    parser.add_argument('--cpu',
+                        action='store_true',
+                        help='use cpu'
+                        )
     parser.add_argument('--v',
                         action='store_true',
                         help='verbose'
@@ -1004,6 +960,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     Global.Plot = args.vis
     Global.Print = args.v
+    Global.device = torch.device('cpu' if args.cpu else 'cuda')
+
     directory = args.img_folder
 
 
