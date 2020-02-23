@@ -653,52 +653,54 @@ def Bass(X, loc):
         mean_value2[i] = np.array([255, 0, 0])
         a=3
 
-    framePointsNew2 = np.zeros((Global.HEIGHT+2, Global.WIDTH+2, 3))
-    framePointsNew3 = np.zeros((Global.HEIGHT+2, Global.WIDTH+2, 3)).astype(np.int)
-    framePointsNew3[1:Global.HEIGHT+1,1:Global.WIDTH+1]=Global.frame0.astype(np.int)
 
-    for i in range(0, Global.K_C + 1):
-        if(len(Global.frame0[r_ik2_for_print == i])):
-            mean_value[i] = np.mean(Global.frame0[r_ik2_for_print == i], axis=0)
+    if not Global.TIF:
+        framePointsNew2 = np.zeros((Global.HEIGHT+2, Global.WIDTH+2, 3))
+        framePointsNew3 = np.zeros((Global.HEIGHT+2, Global.WIDTH+2, 3)).astype(np.int)
+        framePointsNew3[1:Global.HEIGHT+1,1:Global.WIDTH+1]=Global.frame0.astype(np.int)
 
-
-    padded=np.pad(r_ik2_for_print, 1, pad_with, padder=0)
-
+        for i in range(0, Global.K_C + 1):
+            if(len(Global.frame0[r_ik2_for_print == i])):
+                mean_value[i] = np.mean(Global.frame0[r_ik2_for_print == i], axis=0)
 
 
-    for i in range(padded.shape[0]):
-        for j in range(padded.shape[1]):
-            if(padded[i,j]!=0):
-                framePointsNew[i, j] = mean_value[padded[i, j]]
-                framePointsNew2[i, j] = mean_value[padded[i, j]]
-                if(((padded[i+1,j]>0)and(padded[i,j]!=padded[i+1,j])) or ((padded[i,j-1]>0)and(padded[i,j]!=padded[i,j-1])) or ((padded[i,j+1]>0)and(padded[i,j]!=padded[i,j+1])) or ((padded[i-1,j]>0)and(padded[i,j]!=padded[i-1,j]))):
-                    framePointsNew2[i,j]=mean_value2[padded[i,j]]
-                    framePointsNew3[i,j]=mean_value2[padded[i,j]]
-
-    painted=np.zeros(Global.K_C+1)
-    count=0
-    for i in range(0, Global.HEIGHT):
-        for j in range(0, Global.WIDTH):
-            if(painted[r_ik2_for_print[i,j]]==0):
-                count=count+1
-                painted[r_ik2_for_print[i,j]]=1
-
-    framePointsNew=framePointsNew[1:Global.HEIGHT+1,1:Global.WIDTH+1]
-    framePointsNew3=framePointsNew3[1:Global.HEIGHT+1,1:Global.WIDTH+1]
-
-    if(Global.Plot):
-        framePointsNew = framePointsNew.astype('uint8')
-        framePointsNew3 = framePointsNew3.astype('uint8')
+        padded=np.pad(r_ik2_for_print, 1, pad_with, padder=0)
 
 
-        os.makedirs(os.path.join(str(Global.save_folder),'contour'),exist_ok=True)
-        os.makedirs(os.path.join(str(Global.save_folder),'mean'),exist_ok=True)
 
-        pil_im = Image.fromarray(framePointsNew)
-        pil_im2 = Image.fromarray(framePointsNew3)
+        for i in range(padded.shape[0]):
+            for j in range(padded.shape[1]):
+                if(padded[i,j]!=0):
+                    framePointsNew[i, j] = mean_value[padded[i, j]]
+                    framePointsNew2[i, j] = mean_value[padded[i, j]]
+                    if(((padded[i+1,j]>0)and(padded[i,j]!=padded[i+1,j])) or ((padded[i,j-1]>0)and(padded[i,j]!=padded[i,j-1])) or ((padded[i,j+1]>0)and(padded[i,j]!=padded[i,j+1])) or ((padded[i-1,j]>0)and(padded[i,j]!=padded[i-1,j]))):
+                        framePointsNew2[i,j]=mean_value2[padded[i,j]]
+                        framePointsNew3[i,j]=mean_value2[padded[i,j]]
 
-        pil_im.save(os.path.join(str(Global.save_folder),'mean',(str(Global.csv_file)+'.png')),"PNG", optimize=True)
-        pil_im2.save(os.path.join(str(Global.save_folder),'contour',(str(Global.csv_file)+'.png')),"PNG", optimize=True)
+        painted=np.zeros(Global.K_C+1)
+        count=0
+        for i in range(0, Global.HEIGHT):
+            for j in range(0, Global.WIDTH):
+                if(painted[r_ik2_for_print[i,j]]==0):
+                    count=count+1
+                    painted[r_ik2_for_print[i,j]]=1
+
+        framePointsNew=framePointsNew[1:Global.HEIGHT+1,1:Global.WIDTH+1]
+        framePointsNew3=framePointsNew3[1:Global.HEIGHT+1,1:Global.WIDTH+1]
+
+        if(Global.Plot):
+            framePointsNew = framePointsNew.astype('uint8')
+            framePointsNew3 = framePointsNew3.astype('uint8')
+
+
+            os.makedirs(os.path.join(str(Global.save_folder),'contour'),exist_ok=True)
+            os.makedirs(os.path.join(str(Global.save_folder),'mean'),exist_ok=True)
+
+            pil_im = Image.fromarray(framePointsNew)
+            pil_im2 = Image.fromarray(framePointsNew3)
+
+            pil_im.save(os.path.join(str(Global.save_folder),'mean',(str(Global.csv_file)+'.png')),"PNG", optimize=True)
+            pil_im2.save(os.path.join(str(Global.save_folder),'contour',(str(Global.csv_file)+'.png')),"PNG", optimize=True)
 
     if(Global.csv):
         r_ik2 = r_ik2_for_print
@@ -928,7 +930,7 @@ def pad_with(vector, pad_width, iaxis, kwargs):
 """
 
 if __name__ == "__main__":
-    extensions = ("*.png","*.jpg","*.jpeg",)
+    extensions = ("*.png","*.jpg","*.jpeg")
     parser = argparse.ArgumentParser(description='BASS')
     Global.save_folder='out_img'
     parser.add_argument('--img_folder',
@@ -958,15 +960,23 @@ if __name__ == "__main__":
                         default=0,
                         help='large number for more splits (range -10 to 10)'
                         )
+    parser.add_argument('--tif',
+                        action='store_true',
+                        help='tif file'
+                        )
     parser.add_argument('--v',
                         action='store_true',
                         help='verbose'
                         )
+
     args = parser.parse_args()
     Global.Plot = args.vis
     Global.Print = args.v
     Global.device = torch.device('cpu' if args.cpu else 'cuda')
     Global.add_splits = args.add_splits
+    Global.TIF = args.tif
+    if arge.tif:
+        extensions = ("*.tif","*.tiff")
     directory = args.img_folder
 
 

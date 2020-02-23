@@ -71,9 +71,20 @@ def initVariables():
     LOG_ALPHA_MS2 = -26.2
 
 
-    frame0 = np.array(Image.open(IMAGE1))
-    HEIGHT, WIDTH, _ = frame0.shape
+    global TIF
+    if TIF:
+        import tifffile
+        with tifffile.TiffFile(IMAGE1) as tif:
+            h_tif,w_tif = tif.pages[0].asarray().shape
+            c_tif = len(tif.pages)
+            frame0 = np.zeros((h_tif,w_tif,c_tif))
+            for c in range(len(tif.pages)):
+                frame0[:,:,c] = tif.pages[c].asarray()
 
+    else:
+        frame0 = np.array(Image.open(IMAGE1))
+
+    HEIGHT, WIDTH, _ = frame0.shape
     dx = np.array([[-1 / 12, 8 / 12, 0, -8 / 12, 1 / 12]])
 
     """
