@@ -975,7 +975,7 @@ if __name__ == "__main__":
     Global.device = torch.device('cpu' if args.cpu else 'cuda')
     Global.add_splits = args.add_splits
     Global.TIF = args.tif
-    if arge.tif:
+    if args.tif:
         extensions = ("*.tif","*.tiff")
     directory = args.img_folder
 
