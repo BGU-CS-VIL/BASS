@@ -1001,6 +1001,7 @@ if __name__ == "__main__":
     Global.repeat=False
     count = 0
     for Global.IMAGE1 in image_files:
+        torch.cuda.empty_cache()
         count = count + 1
         Global.initVariables()
         Global.K_C = args.sp
