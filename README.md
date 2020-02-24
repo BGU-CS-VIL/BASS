@@ -2,9 +2,9 @@
 
 # Bayesian Adaptive Superpixel Segmentation
 
-This is the official code for our ICCV 2019 paper, "Bayesian Adaptive Superpixel Segmentation", co-authored by Roy Uziel, Meitar Ronen, and Oren Freifeld.
+This is the official code for our ICCV 2019 paper, ["Bayesian Adaptive Superpixel Segmentation"](https://www.cs.bgu.ac.il/~orenfr/BASS/Uziel_ICCV_2019.pdf) , co-authored by Roy Uziel, Meitar Ronen, and Oren Freifeld.
 
-[Bayesian Adaptive Superpixel Segmentation](https://www.cs.bgu.ac.il/~orenfr/BASS/Uziel_ICCV_2019.pdf). 
+
 
 You can run the code using GPU/CPU.
 
