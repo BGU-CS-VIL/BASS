@@ -14,7 +14,7 @@ Created on Tue Apr 24 14:45:03 2018
 
 ************************************************************************************************************************************************************
 """
-
+import Global
 from BASS import *
 import torch
 import os
@@ -124,10 +124,14 @@ def softmaxTF(x, axis,sum):
 
 def Create_DataMatrix(figure):
     x,y=np.mgrid[:figure.shape[0],:figure.shape[1]]
-    L=figure[:,:,0].ravel()
-    A=figure[:,:,1].ravel()
-    B=figure[:,:,2].ravel()
+    if Global.TIF:
+        data = np.array((x.ravel(),y.ravel()))
+        for c in range(Global.TIF_C):
+            data = np.append(data,np.expand_dims(figure[:,:,c].ravel(),0), axis = 0)
+    else:
+        L=figure[:,:,0].ravel()
+        A=figure[:,:,1].ravel()
+        B=figure[:,:,2].ravel()
 
-    data=np.array((x.ravel(),y.ravel(),L,A,B))
+        data =np.array((x.ravel(),y.ravel(),L,A,B))
     return data.T
-

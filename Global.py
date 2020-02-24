@@ -48,6 +48,7 @@ def initVariables():
     global Print
     global device
     global add_splits
+    global TIF_C
     covarince_estimation=True
     split_merges=True
     K_C_HIGH = 999
@@ -76,13 +77,14 @@ def initVariables():
         import tifffile
         with tifffile.TiffFile(IMAGE1) as tif:
             h_tif,w_tif = tif.pages[0].asarray().shape
-            c_tif = len(tif.pages)
-            frame0 = np.zeros((h_tif,w_tif,c_tif))
+            TIF_C = len(tif.pages)
+            frame0 = np.zeros((h_tif,w_tif,TIF_C))
             for c in range(len(tif.pages)):
                 frame0[:,:,c] = tif.pages[c].asarray()
 
     else:
         frame0 = np.array(Image.open(IMAGE1))
+        TIF_C = 3
 
     HEIGHT, WIDTH, _ = frame0.shape
     dx = np.array([[-1 / 12, 8 / 12, 0, -8 / 12, 1 / 12]])
@@ -448,10 +450,11 @@ def initVariables():
     SIGMA_INT_FLOW = torch.from_numpy(
         np.array([1.0 / int_scale, 1.0 / int_scale, 1.0 / int_scale, 1.0 / opt_scale, 1.0 / opt_scale])).unsqueeze(
         0).unsqueeze(0).float().to(device)
-    SIGMA_INT = torch.from_numpy(np.array([1.0 / int_scale, 1.0 / int_scale, 1.0 / int_scale])).unsqueeze(0).unsqueeze(
-        0).float().to(device)
+    SIGMA_INT = np.repeat(np.array(1.0 / int_scale),TIF_C)
+
+    SIGMA_INT = torch.from_numpy(SIGMA_INT).unsqueeze(0).unsqueeze(0).float().to(device)
     PI = torch.from_numpy(np.array([np.pi])).float().to(device)
-    D_ = 5
+    D_ = TIF_C + 2 # prev - 5
     D_Inv = 4
 
     Epsilon = torch.zeros(N).to(device).float() + 0.000000001

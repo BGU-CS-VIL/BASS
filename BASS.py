@@ -115,7 +115,7 @@ def Merge(X,argmax,Nk,it_merge,temp_b,m_v_father_b,m_v_sons_b,b_father_b,b_sons_
         m_v_father = m_v_father_b[0:Nk.shape[0]].zero_()
         b_father = b_father_b[0:Nk.shape[0]].zero_()
 
-        m_v_father.index_add_(0, argmax[:, 0], X[:, 2:5])
+        m_v_father.index_add_(0, argmax[:, 0], X[:, 2:])
         m_v_merged = torch.add(m_v_father, m_v_father[left[:, 1].long()])
 
 
@@ -123,7 +123,7 @@ def Merge(X,argmax,Nk,it_merge,temp_b,m_v_father_b,m_v_sons_b,b_father_b,b_sons_
         m_father = torch.div(m_v_father, v_father.unsqueeze(1))
         a_father = torch.add(Nk / 2, alpha).unsqueeze(1)
         a_merged = torch.add(Nk_merged / 2, alpha).unsqueeze(1)
-        b_father.index_add_(0, argmax[:, 0], torch.pow(X[:, 2:5], 2))
+        b_father.index_add_(0, argmax[:, 0], torch.pow(X[:, 2:], 2))
         b_merged=torch.add(b_father,b_father[left[:,1].long()])
         b_father=b_father/2
         b_merged=b_merged/2
@@ -308,14 +308,14 @@ def Split(X,XXT,argmax,Nk,sons_LL_b,X_sons_b,X_father_b,father_LL_b,C1,c1_temp,c
     m_v_father=m_v_father_b[0:Nk.shape[0]].zero_()
     b_sons = b_sons_b[0:Nk_s.shape[0]].zero_()
     b_father = b_father_b[0:Nk.shape[0]].zero_()
-    m_v_sons.index_add_(0, argmax[:, 1], X[:,2:5])
-    m_v_father.index_add_(0, argmax[:, 0], X[:,2:5])
+    m_v_sons.index_add_(0, argmax[:, 1], X[:,2:])
+    m_v_father.index_add_(0, argmax[:, 0], X[:,2:])
     m_sons=torch.div(m_v_sons,v_sons.unsqueeze(1))
     m_father=torch.div(m_v_father,v_father.unsqueeze(1))
     a_sons=torch.add(Nk_s/2,alpha).unsqueeze(1)
     a_father=torch.add(Nk/2,alpha).unsqueeze(1)
-    b_sons.index_add_(0, argmax[:, 1], torch.pow(X[:, 2:5],2))
-    b_father.index_add_(0, argmax[:, 0],torch.pow(X[:, 2:5],2))
+    b_sons.index_add_(0, argmax[:, 1], torch.pow(X[:, 2:],2))
+    b_father.index_add_(0, argmax[:, 0],torch.pow(X[:, 2:],2))
     b_sons=b_sons/2
     b_father=b_father/2
     b_sons.add_(torch.add(beta,-torch.mul(torch.pow(m_sons,2),v_sons.unsqueeze(1))/2))
@@ -383,27 +383,22 @@ def Split(X,XXT,argmax,Nk,sons_LL_b,X_sons_b,X_father_b,father_LL_b,C1,c1_temp,c
 
 
 def Bass(X, loc):
+
+
+
     if(Global.Print):
         print("CPU->GPU")
-    global SIGMA1
+    # global SIGMA1
     global SIGMA2
     global SIGMAxylab
-    global SIGMAxylab_s
     _=1
-
-    SIGMA1 = np.array([[Global.loc_scale, 0., 0., 0., 0.],
-                       [0., Global.loc_scale, 0., 0., 0.],
-                       [0., 0., Global.int_scale, 0., 0.],
-                       [0., 0., 0., Global.int_scale, 0.],
-                       [0., 0., 0., 0., Global.int_scale]])
 
 
     X = torch.from_numpy(X).to(Global.device).float()
-    SIGMA1 = torch.from_numpy(SIGMA1).to(Global.device).float()
     loc = torch.from_numpy(loc).to(Global.device).float()
 
     index2_buffer = torch.zeros(Global.N).to(Global.device)
-    r_ikNew_buffer = torch.zeros((Global.N, 5)).to(Global.device).reshape(-1)
+    r_ikNew_buffer = torch.zeros((Global.N, Global.TIF_C+2)).to(Global.device).reshape(-1)
 
     range1 = torch.arange(0, Global.N * Global.D_*Global.neig_num).to(Global.device)
     range3 = torch.arange(0, Global.N * Global.neig_num).to(Global.device)
@@ -428,10 +423,7 @@ def Bass(X, loc):
     SIGMAxylab[:, 3, 3] = Global.int_scale
     SIGMAxylab[:, 4, 4] = Global.int_scale
 
-    SIGMAxylab_s = torch.zeros(((Global.K_C + 1)*2, Global.D_,Global.D_)).to(Global.device).float()
-    SIGMAxylab_s[:, 2, 2] = Global.int_scale
-    SIGMAxylab_s[:, 3, 3] = Global.int_scale
-    SIGMAxylab_s[:, 4, 4] = Global.int_scale
+
 
 
     Nk_s= torch.zeros((Global.K_C + 1)*2).float().to(Global.device)
@@ -480,10 +472,10 @@ def Bass(X, loc):
     X_father_b = torch.zeros(Global.N + 1, 2).float().to(Global.device)
     father_LL_b = torch.zeros(Global.N + 1, 4).float().to(Global.device)
 
-    m_v_sons_b = torch.zeros(Global.N + 1, 3).float().to(Global.device)
-    m_v_father_b = torch.zeros(Global.N + 1, 3).float().to(Global.device)
-    b_sons_b = torch.zeros(Global.N + 1, 3).float().to(Global.device)
-    b_father_b = torch.zeros(Global.N + 1, 3).float().to(Global.device)
+    m_v_sons_b = torch.zeros(Global.N + 1, Global.TIF_C).float().to(Global.device)
+    m_v_father_b = torch.zeros(Global.N + 1, Global.TIF_C).float().to(Global.device)
+    b_sons_b = torch.zeros(Global.N + 1, Global.TIF_C).float().to(Global.device)
+    b_father_b = torch.zeros(Global.N + 1, Global.TIF_C).float().to(Global.device)
     temp_b = torch.zeros((Global.K_C), 1).long().to(Global.device)
 
     "End Creating Buffers"
@@ -646,19 +638,23 @@ def Bass(X, loc):
     argmax[:,0]=torch.where(Nk[argmax[:,0]]==1,c_idx,argmax[:,0])
     r_ik_for_print = argmax[:,0].cpu().numpy()
     r_ik2_for_print = np.reshape(r_ik_for_print, (Global.HEIGHT, Global.WIDTH)).astype(int)
-    framePointsNew = np.zeros((Global.HEIGHT+2, Global.WIDTH+2, 3))
-    mean_value = np.zeros((Global.K_C + 1, 3))
+    framePointsNew = np.zeros((Global.HEIGHT+2, Global.WIDTH+2, Global.TIF_C))
+    mean_value = np.zeros((Global.K_C + 1, Global.TIF_C))
     mean_value2=np.zeros((Global.K_C+1,3))
+
+
     for i in range(0,Global.K_C+1):
         mean_value2[i] = np.array([255, 0, 0])
-        a=3
 
 
-    if not Global.TIF:
-        framePointsNew2 = np.zeros((Global.HEIGHT+2, Global.WIDTH+2, 3))
+    if 1:
+        #framePointsNew2 = np.zeros((Global.HEIGHT+2, Global.WIDTH+2, 3))
         framePointsNew3 = np.zeros((Global.HEIGHT+2, Global.WIDTH+2, 3)).astype(np.int)
-        framePointsNew3[1:Global.HEIGHT+1,1:Global.WIDTH+1]=Global.frame0.astype(np.int)
 
+        if Global.TIF:
+            framePointsNew3[1:Global.HEIGHT+1,1:Global.WIDTH+1]= 0 # Global.frame0.astype(np.int)
+        else:
+            framePointsNew3[1:Global.HEIGHT+1,1:Global.WIDTH+1]= Global.frame0.astype(np.int)
         for i in range(0, Global.K_C + 1):
             if(len(Global.frame0[r_ik2_for_print == i])):
                 mean_value[i] = np.mean(Global.frame0[r_ik2_for_print == i], axis=0)
@@ -672,9 +668,9 @@ def Bass(X, loc):
             for j in range(padded.shape[1]):
                 if(padded[i,j]!=0):
                     framePointsNew[i, j] = mean_value[padded[i, j]]
-                    framePointsNew2[i, j] = mean_value[padded[i, j]]
+                    #framePointsNew2[i, j] = mean_value[padded[i, j]]
                     if(((padded[i+1,j]>0)and(padded[i,j]!=padded[i+1,j])) or ((padded[i,j-1]>0)and(padded[i,j]!=padded[i,j-1])) or ((padded[i,j+1]>0)and(padded[i,j]!=padded[i,j+1])) or ((padded[i-1,j]>0)and(padded[i,j]!=padded[i-1,j]))):
-                        framePointsNew2[i,j]=mean_value2[padded[i,j]]
+                        #framePointsNew2[i,j]=mean_value2[padded[i,j]]
                         framePointsNew3[i,j]=mean_value2[padded[i,j]]
 
         painted=np.zeros(Global.K_C+1)
@@ -696,10 +692,18 @@ def Bass(X, loc):
             os.makedirs(os.path.join(str(Global.save_folder),'contour'),exist_ok=True)
             os.makedirs(os.path.join(str(Global.save_folder),'mean'),exist_ok=True)
 
-            pil_im = Image.fromarray(framePointsNew)
+            if not Global.TIF:
+                pil_im = Image.fromarray(framePointsNew)
+
             pil_im2 = Image.fromarray(framePointsNew3)
 
-            pil_im.save(os.path.join(str(Global.save_folder),'mean',(str(Global.csv_file)+'.png')),"PNG", optimize=True)
+            if Global.TIF:
+                from tifffile import imsave
+                framePointsNew = np.swapaxes(np.swapaxes(framePointsNew,0,2),1,2)
+
+                imsave(os.path.join(str(Global.save_folder),'mean',(str(Global.csv_file)+'.tif')),framePointsNew)
+            else:
+                pil_im.save(os.path.join(str(Global.save_folder),'mean',(str(Global.csv_file)+'.png')),"PNG", optimize=True)
             pil_im2.save(os.path.join(str(Global.save_folder),'contour',(str(Global.csv_file)+'.png')),"PNG", optimize=True)
 
     if(Global.csv):
@@ -749,7 +753,7 @@ def E_Step(X, logdet, c1_temp, pi_temp, SigmaXY, X_C_SIGMA, sum, c_idx, c_idx_9,
     torch.add(X.unsqueeze(1), torch.neg(c1_temp.reshape(-1, Global.neig_num, Global.D_)),out=X_C)
     torch.mul(X_C[:, :, 0].unsqueeze(2), SigmaXY[:, :, 0:2],out=X_C_SIGMA_buf)
     torch.addcmul(X_C_SIGMA_buf,1,X_C[:,:,1].unsqueeze(2),SigmaXY[:,:,2:4],out=X_C_SIGMA[:,:,0:2])
-    X_C_SIGMA[:, :, 2:5] = torch.mul(X_C[:, :, 2:5], Global.SIGMA_INT)
+    X_C_SIGMA[:, :, 2:] = torch.mul(X_C[:, :, 2:], Global.SIGMA_INT)
 
     torch.mul(-X_C.view(-1, Global.neig_num,Global.D_),X_C_SIGMA.view(-1,Global.neig_num,Global.D_),out=distances2)
     distances2=distances2.view(-1,Global.neig_num,Global.D_)
