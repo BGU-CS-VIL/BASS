@@ -964,6 +964,11 @@ if __name__ == "__main__":
                         default=0,
                         help='large number for more splits (range -10 to 10)'
                         )
+    parser.add_argument('--potts',
+                    type=float,
+                    default=2.7,
+                    help='potts term'
+                    )
     parser.add_argument('--tif',
                         action='store_true',
                         help='tif file'
@@ -1004,6 +1009,7 @@ if __name__ == "__main__":
         torch.cuda.empty_cache()
         count = count + 1
         Global.initVariables()
+        Global.Beta_P = (args.potts-2.7) + Global.Beta_P
         Global.K_C = args.sp
         Global.csv_file=Global.IMAGE1[Global.IMAGE1.rfind("/")+1:][:-4]
         Global.repeat=False
