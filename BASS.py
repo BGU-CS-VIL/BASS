@@ -701,7 +701,7 @@ def Bass(X, loc):
                 from tifffile import imsave
                 framePointsNew = np.swapaxes(np.swapaxes(framePointsNew,0,2),1,2)
 
-                imsave(os.path.join(str(Global.save_folder),'mean',(str(Global.csv_file)+'.tif')),framePointsNew)
+                imsave(os.path.join(str(Global.save_folder),'mean',(str(Global.csv_file)+'.tif')),framePointsNew,metadata=Global.meta_data)
             else:
                 pil_im.save(os.path.join(str(Global.save_folder),'mean',(str(Global.csv_file)+'.png')),"PNG", optimize=True)
             pil_im2.save(os.path.join(str(Global.save_folder),'contour',(str(Global.csv_file)+'.png')),"PNG", optimize=True)

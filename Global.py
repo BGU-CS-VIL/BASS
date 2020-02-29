@@ -49,6 +49,7 @@ def initVariables():
     global device
     global add_splits
     global TIF_C
+    global meta_data
     covarince_estimation=True
     split_merges=True
     K_C_HIGH = 999
@@ -79,6 +80,8 @@ def initVariables():
             h_tif,w_tif = tif.pages[0].asarray().shape
             TIF_C = len(tif.pages)
             frame0 = np.zeros((h_tif,w_tif,TIF_C))
+            meta_data = tif.imagej_metadata
+
             for c in range(len(tif.pages)):
                 frame0[:,:,c] = tif.pages[c].asarray()
 
