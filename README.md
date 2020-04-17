@@ -6,7 +6,7 @@ This is the official code for our ICCV 2019 paper, ["Bayesian Adaptive Superpixe
 
 You can run the code using either GPU or CPU.
 
-Remmark: we are currently working on an even faster GPU implementation. 
+Remark (17/4/2020): we are currently working on an even faster GPU implementation. 
 
 # Installation
 
