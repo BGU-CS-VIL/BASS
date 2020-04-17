@@ -4,9 +4,9 @@
 
 This is the official code for our ICCV 2019 paper, ["Bayesian Adaptive Superpixel Segmentation"](https://www.cs.bgu.ac.il/~orenfr/BASS/Uziel_ICCV_2019.pdf) , co-authored by Roy Uziel, Meitar Ronen, and Oren Freifeld.
 
+You can run the code using either GPU or CPU.
 
-
-You can run the code using GPU/CPU.
+Remmark: we are currently working on an even faster GPU implementation. 
 
 # Installation
 
