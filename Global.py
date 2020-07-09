@@ -86,7 +86,7 @@ def initVariables():
                 frame0[:,:,c] = tif.pages[c].asarray()
 
     else:
-        frame0 = np.array(Image.open(IMAGE1))
+        frame0 = np.array(Image.open(IMAGE1).convert('RGB'))
         TIF_C = 3
 
     HEIGHT, WIDTH, _ = frame0.shape
