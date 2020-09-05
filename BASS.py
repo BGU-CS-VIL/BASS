@@ -67,23 +67,23 @@ def Merge(X,argmax,Nk,it_merge,temp_b,m_v_father_b,m_v_sons_b,b_father_b,b_sons_
         if(it_merge%4==0):
             ind_left = torch.masked_select(Global.inside_padded, (
                         (padded_matrix[Global.inside_padded] != padded_matrix[Global.inside_padded - 1]) & (
-                            padded_matrix[Global.inside_padded - 1] > 0)))
-            left[padded_matrix[ind_left],1] = padded_matrix[ind_left - 1].int()
+                            padded_matrix[Global.inside_padded - 1] > 0))).long()
+            left[padded_matrix[ind_left].long(),1] = padded_matrix[ind_left - 1].int()
         if (it_merge%4 == 1):
             ind_left = torch.masked_select(Global.inside_padded, (
                     (padded_matrix[Global.inside_padded] != padded_matrix[Global.inside_padded + 1]) &(
-                    padded_matrix[Global.inside_padded + 1] > 0)))
-            left[padded_matrix[ind_left], 1] = padded_matrix[ind_left + 1].int()
+                    padded_matrix[Global.inside_padded + 1] > 0))).long()
+            left[padded_matrix[ind_left].long(), 1] = padded_matrix[ind_left + 1].int()
         if (it_merge%4 == 2):
             ind_left = torch.masked_select(Global.inside_padded, (
                     (padded_matrix[Global.inside_padded] != padded_matrix[Global.inside_padded - (Global.WIDTH+2)]) & (
-                    padded_matrix[Global.inside_padded - (Global.WIDTH+2)] > 0)))
-            left[padded_matrix[ind_left], 1] = padded_matrix[ind_left - (Global.WIDTH+2)].int()
+                    padded_matrix[Global.inside_padded - (Global.WIDTH+2)] > 0))).long()
+            left[padded_matrix[ind_left].long(), 1] = padded_matrix[ind_left - (Global.WIDTH+2)].int()
         if (it_merge%4 == 3):
             ind_left = torch.masked_select(Global.inside_padded, (
                     (padded_matrix[Global.inside_padded] != padded_matrix[Global.inside_padded + (Global.WIDTH+2)]) & (
-                    padded_matrix[Global.inside_padded + (Global.WIDTH+2)] > 0)))
-            left[padded_matrix[ind_left], 1] = padded_matrix[ind_left + (Global.WIDTH+2)].int()
+                    padded_matrix[Global.inside_padded + (Global.WIDTH+2)] > 0))).long()
+            left[padded_matrix[ind_left].long(), 1] = padded_matrix[ind_left + (Global.WIDTH+2)].int()
 
         it_merge=it_merge+1
 
@@ -102,7 +102,7 @@ def Merge(X,argmax,Nk,it_merge,temp_b,m_v_father_b,m_v_sons_b,b_father_b,b_sons_
         left[:,1]=pair
 
         Nk.zero_()
-        Nk.index_add_(0, argmax[:, 0], Global.ones)
+        Nk.index_add_(0, argmax[:, 0].long(), Global.ones)
         Nk = Nk + 0.0000000001
 
         Nk_merged=torch.add(Nk,Nk[left[:,1].long()])
@@ -115,7 +115,7 @@ def Merge(X,argmax,Nk,it_merge,temp_b,m_v_father_b,m_v_sons_b,b_father_b,b_sons_
         m_v_father = m_v_father_b[0:Nk.shape[0]].zero_()
         b_father = b_father_b[0:Nk.shape[0]].zero_()
 
-        m_v_father.index_add_(0, argmax[:, 0], X[:, 2:])
+        m_v_father.index_add_(0, argmax[:, 0].long(), X[:, 2:])
         m_v_merged = torch.add(m_v_father, m_v_father[left[:, 1].long()])
 
 
@@ -123,7 +123,7 @@ def Merge(X,argmax,Nk,it_merge,temp_b,m_v_father_b,m_v_sons_b,b_father_b,b_sons_
         m_father = torch.div(m_v_father, v_father.unsqueeze(1))
         a_father = torch.add(Nk / 2, alpha).unsqueeze(1)
         a_merged = torch.add(Nk_merged / 2, alpha).unsqueeze(1)
-        b_father.index_add_(0, argmax[:, 0], torch.pow(X[:, 2:], 2))
+        b_father.index_add_(0, argmax[:, 0].long(), torch.pow(X[:, 2:], 2))
         b_merged=torch.add(b_father,b_father[left[:,1].long()])
         b_father=b_father/2
         b_merged=b_merged/2
@@ -191,7 +191,7 @@ def Merge(X,argmax,Nk,it_merge,temp_b,m_v_father_b,m_v_sons_b,b_father_b,b_sons_
         left[:,1]=Global.N_index[0:Global.K_C+1]
         left[idx_rand.long(),1]=pair[idx_rand.long()]
 
-        argmax[:,0] = left[argmax[:,0],1]
+        argmax[:,0] = left[argmax[:,0].long(),1]
 
 
         if(Global.Print):
@@ -210,9 +210,9 @@ def Split(X,XXT,argmax,Nk,sons_LL_b,X_sons_b,X_father_b,father_LL_b,C1,c1_temp,c
     a_prior_sons = Nk_s
     Global.psi_prior_sons = torch.mul(torch.pow(a_prior_sons, 2).unsqueeze(1), torch.eye(2).reshape(-1, 4).to(Global.device))
     Global.ni_prior_sons = (Global.C_prior * a_prior_sons) - 3
-    Nk.index_add_(0, argmax[:, 0], Global.ones)
+    Nk.index_add_(0, argmax[:, 0].long(), Global.ones)
     Nk = Nk + 0.0000000001
-    Nk_s.index_add_(0, argmax[:, 1], Global.ones)
+    Nk_s.index_add_(0, argmax[:, 1].long(), Global.ones)
     Nk_s = Nk_s + 0.0000000001
 
 
@@ -223,8 +223,8 @@ def Split(X,XXT,argmax,Nk,sons_LL_b,X_sons_b,X_father_b,father_LL_b,C1,c1_temp,c
     father_LL=father_LL_b[0:Global.K_C+1].zero_()
 
 
-    X_sons.index_add_(0,argmax[:,1],X[:,0:2])
-    X_father.index_add_(0,argmax[:,0],X[:,0:2])
+    X_sons.index_add_(0,argmax[:,1].long(),X[:,0:2])
+    X_father.index_add_(0,argmax[:,0].long(),X[:,0:2])
     sons_LL[:,0]= -torch.pow(X_sons[:,0],2)
     sons_LL[:,1]= -torch.mul(X_sons[:,0],X_sons[:,1])
     sons_LL[:,2]= -sons_LL[:,1]
@@ -236,8 +236,8 @@ def Split(X,XXT,argmax,Nk,sons_LL_b,X_sons_b,X_father_b,father_LL_b,C1,c1_temp,c
     father_LL[:, 3] = -torch.pow(X_father[:,1], 2)
 
 
-    sons_LL.index_add_(0, argmax[:,1], XXT)
-    father_LL.index_add_(0,argmax[:,0],XXT)
+    sons_LL.index_add_(0, argmax[:,1].long(), XXT)
+    father_LL.index_add_(0,argmax[:,0].long(),XXT)
 
     ni_sons=torch.add(Global.ni_prior_sons,Nk_s)[0:sons_LL.shape[0]]
     ni_father=torch.add(Global.ni_prior,Nk)[0:father_LL.shape[0]]
@@ -294,9 +294,9 @@ def Split(X,XXT,argmax,Nk,sons_LL_b,X_sons_b,X_father_b,father_LL_b,C1,c1_temp,c
     beta=torch.Tensor([Global.int_scale*alpha+Global.int_scale]).to(Global.device)
     Nk.zero_()
     Nk_s.zero_()
-    Nk.index_add_(0, argmax[:, 0], Global.ones)
+    Nk.index_add_(0, argmax[:, 0].long(), Global.ones)
     Nk = Nk + 0.0000000001
-    Nk_s.index_add_(0, argmax[:, 1], Global.ones)
+    Nk_s.index_add_(0, argmax[:, 1].long(), Global.ones)
     Nk_s = Nk_s + 0.0000000001
     v_father=Nk
     v_sons=Nk_s
@@ -308,14 +308,14 @@ def Split(X,XXT,argmax,Nk,sons_LL_b,X_sons_b,X_father_b,father_LL_b,C1,c1_temp,c
     m_v_father=m_v_father_b[0:Nk.shape[0]].zero_()
     b_sons = b_sons_b[0:Nk_s.shape[0]].zero_()
     b_father = b_father_b[0:Nk.shape[0]].zero_()
-    m_v_sons.index_add_(0, argmax[:, 1], X[:,2:])
-    m_v_father.index_add_(0, argmax[:, 0], X[:,2:])
+    m_v_sons.index_add_(0, argmax[:, 1].long(), X[:,2:])
+    m_v_father.index_add_(0, argmax[:, 0].long(), X[:,2:])
     m_sons=torch.div(m_v_sons,v_sons.unsqueeze(1))
     m_father=torch.div(m_v_father,v_father.unsqueeze(1))
     a_sons=torch.add(Nk_s/2,alpha).unsqueeze(1)
     a_father=torch.add(Nk/2,alpha).unsqueeze(1)
-    b_sons.index_add_(0, argmax[:, 1], torch.pow(X[:, 2:],2))
-    b_father.index_add_(0, argmax[:, 0],torch.pow(X[:, 2:],2))
+    b_sons.index_add_(0, argmax[:, 1].long(), torch.pow(X[:, 2:],2))
+    b_father.index_add_(0, argmax[:, 0].long(),torch.pow(X[:, 2:],2))
     b_sons=b_sons/2
     b_father=b_father/2
     b_sons.add_(torch.add(beta,-torch.mul(torch.pow(m_sons,2),v_sons.unsqueeze(1))/2))
@@ -372,9 +372,9 @@ def Split(X,XXT,argmax,Nk,sons_LL_b,X_sons_b,X_father_b,father_LL_b,C1,c1_temp,c
     left = torch.zeros(Global.K_C + 1, 2).int().to(Global.device)
     left[:, 0] = Global.N_index[0:Global.K_C + 1]
     left[idx_rand,1]=1
-    pixels_to_change = left[argmax[:,0],1]
+    pixels_to_change = left[argmax[:,0].long(),1]
 
-    original=torch.where(pixels_to_change==1,argmax[:, 1],argmax[:,0])
+    original=torch.where(pixels_to_change==1,argmax[:, 1].long(),argmax[:,0].long())
 
 
     return argmax,Nk,original
@@ -549,10 +549,10 @@ def Bass(X, loc):
 
 
         prev_r_ik_max = prev_r_ik_max.view((Global.HEIGHT, Global.WIDTH))
-        c1_vals = C1.index_select(0, c_idx).view(-1)
-        pi_vals = pi_t.index_select(0, c_idx).view(-1)
-        SigmaXY_vals = SigmaXY_i.index_select(0, c_idx).view(-1)
-        logdet_vals = logdet.index_select(0, c_idx).view(-1)
+        c1_vals = C1.index_select(0, c_idx.long()).view(-1)
+        pi_vals = pi_t.index_select(0, c_idx.long()).view(-1)
+        SigmaXY_vals = SigmaXY_i.index_select(0, c_idx.long()).view(-1)
+        logdet_vals = logdet.index_select(0, c_idx.long()).view(-1)
         c1_temp.scatter_(0, range1, c1_vals)
         pi_temp.scatter_(0, range3, pi_vals)
         logdet_temp.scatter_(0, range3, logdet_vals)
@@ -618,10 +618,10 @@ def Bass(X, loc):
             prev_r_ik_max=torch.take(c_idx,torch.add(prev_r_ik_max,range_conn))
 
             Nk.zero_()
-            Nk.index_add_(0, argmax[:, 0], Global.ones)
+            Nk.index_add_(0, argmax[:, 0].long(), Global.ones)
             c_idx = prev_r_ik_max.view(-1).index_select(0, Global.c_idx)
             c_idx=c_idx.reshape(-1, Global.neig_num)[:,1]
-            argmax[:,0]=torch.where(Nk[argmax[:,0]]==1,c_idx,argmax[:,0])
+            argmax[:,0]=torch.where(Nk[argmax[:,0].long()]==1,c_idx,argmax[:,0])
 
     if (Global.device == torch.device('cpu')):
         end = time.time()
@@ -632,10 +632,10 @@ def Bass(X, loc):
         print("Time taken: ",start.elapsed_time(end))
 
     Nk.zero_()
-    Nk.index_add_(0, argmax[:, 0], Global.ones)
+    Nk.index_add_(0, argmax[:, 0].long(), Global.ones)
     c_idx = prev_r_ik_max.view(-1).index_select(0, Global.c_idx)
     c_idx=c_idx.reshape(-1, Global.neig_num)[:,1]
-    argmax[:,0]=torch.where(Nk[argmax[:,0]]==1,c_idx,argmax[:,0])
+    argmax[:,0]=torch.where(Nk[argmax[:,0].long()]==1,c_idx,argmax[:,0])
     r_ik_for_print = argmax[:,0].cpu().numpy()
     r_ik2_for_print = np.reshape(r_ik_for_print, (Global.HEIGHT, Global.WIDTH)).astype(int)
     framePointsNew = np.zeros((Global.HEIGHT+2, Global.WIDTH+2, Global.TIF_C))
@@ -845,21 +845,21 @@ def M_Step(X, loc, argmax, Sigma, SigmaInv, Nk, X1, X2_00, X2_01, X2_11, init, N
     X2_01.zero_()
     X2_11.zero_()
     argmax=argmax[:,0]
-    Nk.index_add_(0, argmax, Global.ones)
+    Nk.index_add_(0, argmax.long(), Global.ones)
     Nk = Nk + 0.0000000001
-    X1.index_add_(0,argmax,X)
+    X1.index_add_(0,argmax.long(),X)
 
     C = torch.div(X1, Nk.unsqueeze(1))
     mul=torch.pow(loc[:,0],2)
 
-    X2_00.index_add_(0,argmax,mul)
+    X2_00.index_add_(0,argmax.long(),mul)
 
     mul=torch.mul(loc[:,0],loc[:,1])
-    X2_01.index_add_(0,argmax,mul)
+    X2_01.index_add_(0,argmax.long(),mul)
 
 
     mul=torch.pow(loc[:,1],2)
-    X2_11.index_add_(0,argmax,mul)
+    X2_11.index_add_(0,argmax.long(),mul)
 
 
     Sigma00=torch.add(X2_00,-torch.div(torch.pow(X1[:,0],2),Nk))

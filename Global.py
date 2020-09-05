@@ -51,7 +51,7 @@ def initVariables():
     global TIF_C
     global meta_data
     covarince_estimation=True
-    split_merges=True
+    split_merges=False
     K_C_HIGH = 999
     K_C_LOW =  0
 

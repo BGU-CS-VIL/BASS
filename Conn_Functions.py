@@ -43,13 +43,13 @@ def Change_pixel(prev_r_ik,r_ik,index2,r_ik_t5,mod,c_vals,r_ik_tk,range_conn):
     ind = torch.all(number2.view(5, -1), dim=0).float()  # ind that we can change
     index2.zero_()
     if(mod==1):
-        index2.scatter_(0, Global.idx_1, ind)  # 0 -same as before , 1 - Can change (All N pixels)
+        index2.scatter_(0, Global.idx_1.long(), ind)  # 0 -same as before , 1 - Can change (All N pixels)
     if (mod == 2):
-        index2.scatter_(0, Global.idx_2, ind)  # 0 -same as before , 1 - Can change (All N pixels)
+        index2.scatter_(0, Global.idx_2.long(), ind)  # 0 -same as before , 1 - Can change (All N pixels)
     if (mod == 3):
-        index2.scatter_(0, Global.idx_3, ind)  # 0 -same as before , 1 - Can change (All N pixels)
+        index2.scatter_(0, Global.idx_3.long(), ind)  # 0 -same as before , 1 - Can change (All N pixels)
     if (mod == 0):
-        index2.scatter_(0, Global.idx_4, ind)  # 0 -same as before , 1 - Can change (All N pixels)
+        index2.scatter_(0, Global.idx_4.long(), ind)  # 0 -same as before , 1 - Can change (All N pixels)
     # index2 = index2.scatter_(0, Global.idx[:, mod], ind)  # 0 -same as before , 1 - Can change (All N pixels)
     max_neigh=torch.argmax(r_ik, dim=1)
     valsNew = torch.add(max_neigh,range_conn)
@@ -166,7 +166,7 @@ def Split(prev_r_ik,split_prev_r_ik,c1,c1_idx,idx_rand,clusters_LR,it_split):
 
     dataR[new_cluster_idx.long(),1]= ( Global.Padding0(split_prev_r_ik).reshape(-1).to(Global.device)[new_cluster_idx]).int()
     dataR[new_cluster_idx.long(),1]=(data2[( Global.Padding0(split_prev_r_ik).reshape(-1).to(Global.device)[new_cluster_idx]).long(),1])
-    padded_matrix[new_cluster_idx.long()]=(dataR[new_cluster_idx.long(),1].long()).clone()
+    padded_matrix[new_cluster_idx.long()]=(dataR[new_cluster_idx.long(),1].int()).clone()
     clusters_LR[:,1].zero_()
     clusters_LR[idx,1]=data2[idx,1]
 
