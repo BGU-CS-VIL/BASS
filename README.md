@@ -4,7 +4,7 @@
 
 This is the official code for our ICCV 2019 paper, ["Bayesian Adaptive Superpixel Segmentation"](https://www.cs.bgu.ac.il/~orenfr/BASS/Uziel_ICCV_2019.pdf) , co-authored by Roy Uziel, Meitar Ronen, and Oren Freifeld.
 
-The original code is deprecated and replaced by faster CUDA implementation (x50 speed improvement)
+# Important update (12/3/2021): Note well: The original GPU code (from the time of the publication of the paper) has been deprecated. The current code is based on a much faster CUDA implementation, leading usually to  x50 speedup.
 
 # Prerequisites
 GPU 
