@@ -7,9 +7,9 @@ This is the official code for our ICCV 2019 paper, ["Bayesian Adaptive Superpixe
 #### Important update (12/3/2022). The original PyTorch-based GPU code (from the time of the publication of the paper) has been deprecated. The current CUDA-based GPU implementation is much faster, translating usually to a x50 speedup. 
 
 # Prerequisites
-GPU 
-CUDA driver (Tested on 11.3+)
-OpenCV 
+GPU<br />
+CUDA driver (Tested on 11.3+) <br />
+OpenCV <br />
 
 # Installation
 
@@ -32,11 +32,11 @@ $./Sp_demo_for_direc -d ../images
 Mean and contours images will be saved at ../result alongside the segmentation map (csv)
 
 ### Args and Kwargs:
--n the desired number of pixels on the side of a superpixel
--i_std std dev for color Gaussians, should be 0.01<= value <=0.05. A smaller value leads to more irregular superpixels
---im_size resizing input images (single number)
---beta beta (Potts) 0 < value < 10
---alpha alpha (Hasting ratio) 0.01< value <100
+-n the desired number of pixels on the side of a superpixel<br />
+-i_std std dev for color Gaussians, should be 0.01<= value <=0.05. A smaller value leads to more irregular superpixels<br />
+--im_size resizing input images (single number)<br />
+--beta beta (Potts) 0 < value < 10<br />
+--alpha alpha (Hasting ratio) 0.01< value <100<br />
 
 ### Usage Examples:
 
