@@ -5,7 +5,7 @@
 This is the official code for our ICCV 2019 paper, ["Bayesian Adaptive Superpixel Segmentation"](https://www.cs.bgu.ac.il/~orenfr/BASS/Uziel_ICCV_2019.pdf) , co-authored by Roy Uziel, Meitar Ronen, and Oren Freifeld.
 
 #### Important update (12/3/2022): The code is now much faster than it used to be. 
-The original PyTorch-based GPU code (released in 2019) has been deprecated. The current CUDA-based GPU implementation (of the same algorithm from the paper) is much faster, translating usually to a x50 speedup. For example, using an NVIDIA GeForce GTX 1070 graphics card, a typical running time on a 512x512 image is 0.042 seconds.
+The original PyTorch-based GPU code (released in 2019) has been deprecated. The current CUDA-based GPU implementation (of the same algorithm from the paper) is much faster, translating usually to a x50 speedup. <b>For example, using an NVIDIA GeForce GTX 1070 graphics card, a typical running time on a 512x512 image is 0.042 seconds.</b>
 
 # Prerequisites
 GPU<br />
