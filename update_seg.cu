@@ -220,7 +220,7 @@ __global__   void cal_posterior( float* img, int* seg, bool* border, superpixel_
     //space component
     res = res - d0*d0*sigma_s_x;
     res = res - d1*d1*sigma_s_z;
-    res = res -  2*d0*d1*sigma_s_y;            // res -= calc_squared_mahal_2d(pt,mu_s,J_s);
+    res = res +  2*d0*d1*sigma_s_y;            // res -= calc_squared_mahal_2d(pt,mu_s,J_s);
     res = res -  logdet_sigma_s;
     //post_changes[idx].post[idx_inside] = res;
     if (res > atomicMaxFloat(&post_changes[idx].post[4],res))
@@ -264,7 +264,7 @@ __global__   void cal_posterior( float* img, int* seg, bool* border, superpixel_
     //space component
     res = res - d0*d0*sigma_s_x;
     res = res - d1*d1*sigma_s_z;
-    res = res -  2*d0*d1*sigma_s_y;            // res -= calc_squared_mahal_2d(pt,mu_s,J_s);
+    res = res +  2*d0*d1*sigma_s_y;            // res -= calc_squared_mahal_2d(pt,mu_s,J_s);
     res = res -  logdet_sigma_s;
     if (res > atomicMaxFloat(&post_changes[idx].post[4],res))
     seg[idx] = seg_idx;
