@@ -43,13 +43,13 @@ Mean and contour images will be saved at ../result alongside the segmentation ma
 
 #### Changing the initial number of Superpixels:
 ```bash
-./Sp_demo_for_direc -d ../images -n 25
+./Sp_demo_for_direc -d ../images/ -n 25
 ```
 ![alt-text-1](./gif/border_25.png "-n 25") 
 
 
 ```bash
-./Sp_demo_for_direc -d ../images -n 15
+./Sp_demo_for_direc -d ../images/ -n 15
 ```
 
 ![alt-text-2](./gif/border_20.png "-n 15")
