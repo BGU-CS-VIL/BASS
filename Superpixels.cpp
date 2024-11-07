@@ -71,7 +71,6 @@ Superpixels::Superpixels(int img_dimx, int img_dimy, superpixel_options spoption
 
         throw_on_cuda_error( cudaMalloc((void**) &seg_potts_label, nPixels * sizeofint));
         throw_on_cuda_error( cudaMalloc((void**) &border_gpu, nPixels*sizeofbool));
-        throw_on_cuda_error( cudaMalloc((void**) &split_merge_pairs, 2*nPixels*sizeofint));
         throw_on_cuda_error( cudaMalloc((void**) &split_merge_unique, 2*nPixels*sizeofint));
 
 
@@ -95,6 +94,7 @@ Superpixels::Superpixels(int img_dimx, int img_dimy, superpixel_options spoption
     }
     max_SP = nSPs;
     int nSPs_buffer = nSPs * 50;
+    throw_on_cuda_error( cudaMalloc((void**) &split_merge_pairs, 2*nSPs_buffer*sizeofint)); // twice size of superpixel buffer
 
     const int sofsparams = sizeof(superpixel_params);
     const int sofsphelper = sizeof(superpixel_GPU_helper);
